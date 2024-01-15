@@ -1,4 +1,3 @@
-*.text
 
 MPI/*.exe
 MPI/.vscode/
