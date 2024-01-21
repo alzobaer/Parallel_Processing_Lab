@@ -34,7 +34,7 @@ int main() {
     MPI_Comm_size(Comm, &size);
 
     if(id == 0){
-        FILE *file = fopen("count_words.txt", "rb");
+        FILE *file = fopen("pattern_occurrence.txt", "rb");
 
         // Determine the size of the file
         fseek(file, 0, SEEK_END);
