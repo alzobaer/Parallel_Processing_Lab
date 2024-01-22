@@ -1,0 +1,10 @@
+1. check version
+	!nvcc --version
+2. package install 
+	!pip install git+https://github.com/andreinechaev/nvcc4jupyter.git
+3. create output directory
+	%load_ext nvcc_plugin
+4. write the code
+	......................
+	.......................
+	......................
