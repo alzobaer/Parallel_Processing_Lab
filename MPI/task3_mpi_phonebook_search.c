@@ -15,9 +15,10 @@ typedef struct {
 void searchPhonebook(char names[][50], char numbers[][50], char* searchName, int start, int end) {
     for (int i = start; i < end; i++) {
         // Case-sensitive search for the given name in the phonebook
-        if (strstr(names[i], searchName) != NULL)
+        if (strstr(names[i], searchName) != NULL){
             // Print the matching name and corresponding phone number
             printf("%s\t%s\n", names[i], numbers[i]);
+        }
     }
 }
 
@@ -28,6 +29,8 @@ int main(int argc, char **argv) {
 
     int id, size;
     int line_count = 0;
+
+    double cal_start_time, cal_end_time;
 
     // Initialize MPI
     MPI_Init(&argc, &argv);
@@ -82,6 +85,8 @@ int main(int argc, char **argv) {
         // Prompt the user to enter the name to search for
         scanf("%s", searchName);
     }
+
+    cal_start_time = MPI_Wtime();
     
     // Broadcast the line count, search name, and phonebook data to all processes
     MPI_Bcast(&line_count, 1, MPI_INT, 0, MPI_COMM_WORLD);
@@ -93,7 +98,6 @@ int main(int argc, char **argv) {
         MPI_Bcast(names[i], 50, MPI_CHAR, 0, MPI_COMM_WORLD);
         MPI_Bcast(contacts[i], 50, MPI_CHAR, 0, MPI_COMM_WORLD);
     }
-
     // Divide the work among processes based on line count and process ID
     int width = line_count / size;
     int start = id * width;
@@ -107,6 +111,12 @@ int main(int argc, char **argv) {
 
     // Call the search function for the assigned range of contacts
     searchPhonebook(names, contacts, searchName, start, end);
+
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    cal_end_time = MPI_Wtime();
+
+    printf("PID %d: Total time: %lf\n", id, cal_end_time - cal_start_time);   
 
     MPI_Finalize();
 
