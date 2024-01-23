@@ -70,15 +70,12 @@ int main(int argc, char **argv) {
     // Broadcast the line count, search name to all processes
     MPI_Bcast(&line_count, 1, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Bcast(searchName, 50, MPI_CHAR, 0, MPI_COMM_WORLD);
-    MPI_Barrier(MPI_COMM_WORLD);
 
     // Broadcast each name and contact to all processes
     for (int i = 0; i < line_count; i++) {
         MPI_Bcast(names[i], 50, MPI_CHAR, 0, MPI_COMM_WORLD);
         MPI_Bcast(contacts[i], 50, MPI_CHAR, 0, MPI_COMM_WORLD);
     }
-    MPI_Barrier(MPI_COMM_WORLD);
-
 
     // Divide the work among processes based on line count and process ID
     int width = line_count / size;
@@ -90,20 +87,32 @@ int main(int argc, char **argv) {
         end = line_count;   // higher rank executes till last line
     else
         end = (id + 1) * width;
+
+    // Arrays to store matching results for each process
+    char matchedNames[MAX_LINE_LENGTH][MAX_NAME_LENGTH];
+    char matchedContacts[MAX_LINE_LENGTH][MAX_PHONE_LENGTH];
+    int matchedCount = 0;
         
-    // search for a name in a range of contacts and print matching results
+    // Search for a name in a range of contacts and store matching results
     for (int i = start; i < end; i++) {
         // Case-sensitive search for the given name in the phonebook
-        if (strstr(names[i], searchName) != NULL){      // searches for the substring searchName within the string names[i]
-            //printf("%s\t%s\n", names[i], contacts[i]);
+        if (strstr(names[i], searchName) != NULL) {
+            strcpy(matchedNames[matchedCount], names[i]);
+            strcpy(matchedContacts[matchedCount], contacts[i]);
+            matchedCount++;
         }
     }
 
+    MPI_Barrier(MPI_COMM_WORLD);
 
     cal_end_time = MPI_Wtime();
 
-    MPI_Barrier(MPI_COMM_WORLD);
-    printf("PID %d: Total time: %lf\n", id, (cal_end_time - cal_start_time));   
+    // Print matching results and total time for each process
+    printf("\nPID %d: Total time: %lf\n", id, (cal_end_time - cal_start_time));
+
+    for (int i = 0; i < matchedCount; i++) {
+        printf("PID %d: %s\t%s\n", id, matchedNames[i], matchedContacts[i]);
+    }
 
     MPI_Finalize();
 
